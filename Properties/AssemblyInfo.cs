@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // Управление общими сведениями о сборке осуществляется посредством следующего 
 // набора атрибутов. Измените значения этих атрибутов, чтобы изменить сведения,
 // общие сведения об этой сборке.
-[assembly: AssemblyTitle("Monoalphabet.Properties")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Monoalphabet Cipher Implementation")]
+[assembly: AssemblyDescription("A program whics uses simple monoalphabet cipher algorithm to encrypt small texts.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("MIREA — Russian Technological University")]
 [assembly: AssemblyProduct("Monoalphabet.Properties")]
-[assembly: AssemblyCopyright("Copyright ©  2020")]
+[assembly: AssemblyCopyright("Copyright ©  Vadim Ermakov, 2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
