@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using System.Data;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace Monoalphabet
 {
@@ -39,10 +40,10 @@ namespace Monoalphabet
 			this.makeDictionary();
 
 			ToolTip toolTip = new ToolTip();
-			toolTip.SetToolTip((Control)this.ciphAlphabetTextbox, "Cipher alphabet input field");
-			toolTip.SetToolTip((Control)this.toEncryptTextbox, "Input (or drop a .txt file) text to encrypt here");
-			toolTip.SetToolTip((Control)this.encryptedTextTextbox, "Copy the encrypted text from here");
-			toolTip.SetToolTip((Control)this.lockEncryptImage, "Click to encrypt text from the left textbox");
+			toolTip.SetToolTip(this.ciphAlphabetTextbox, "Cipher alphabet input field");
+			toolTip.SetToolTip(this.toEncryptTextbox, "Input text to encrypt here");
+			toolTip.SetToolTip(this.encryptedTextTextbox, "Copy the encrypted text from here");
+			toolTip.SetToolTip(this.lockEncryptImage, "Click to encrypt text from the left textbox");
 			
 			this.englishLetters = new Regex("[a-zA-Z]", RegexOptions.Compiled);
 		}
@@ -238,22 +239,105 @@ namespace Monoalphabet
 			{
 				this.dictionary[this.strOrigAlphabet[i]] = this.strCiphAlphabet[i];
 			}
+
 			return;
+		}
+
+	private Boolean validateCipherAlphabet(String candidate)
+		{
+			Boolean isValid = true;
+			Console.Clear();
+
+			foreach (Char c in candidate)
+			{
+				if (!Char.IsWhiteSpace(Char.ToLower(c)) && (Char.IsLetterOrDigit(Char.ToLower(c)) || Char.IsSymbol(Char.ToLower(c))))
+				{
+					isValid &= true;
+
+					Console.WriteLine("Symbol '{0}' is correct", c);
+				}
+				else
+				{
+					isValid &= false;
+
+					Console.WriteLine("Symbol '{0}' is not correct", c);
+				}
+			}
+
+			isValid &= candidate.Equals(new String(candidate.Distinct().ToArray()));
+
+			Console.WriteLine("candidate.Equals(new String(candidate.Distinct().ToArray())) = {0}", candidate.Equals(new String(candidate.Distinct().ToArray())));
+
+			return isValid;
+
 		}
 
 		private void ciphAlphabetTextbox_TextChanged(object sender, EventArgs e)
 		{
+			if (this.ciphAlphabetTextbox.TextLength == 26)
+			{
+				if (validateCipherAlphabet(this.ciphAlphabetTextbox.Text))
+				{
+					this.incorrectCipherAlphabetLabel.Visible = false;
+					this.correctCipherAlphabetLabel.Visible = true;
 
+					makeDictionary();
+
+					this.toEncryptTextbox.ReadOnly = false;
+					this.toEncryptTextbox.Focus();
+				}
+				else
+				{
+					this.incorrectCipherAlphabetLabel.Visible = true;
+					this.correctCipherAlphabetLabel.Visible = false;
+					this.toEncryptTextbox.ReadOnly = true;
+				}
+			}
+			else
+			{
+				this.toEncryptTextbox.Clear();
+				this.toEncryptTextbox.ReadOnly = true;
+			}
+
+			return;
 		}
 
 		private void toEncryptTextbox_Click(object sender, EventArgs e)
 		{
+			if (this.toEncryptTextbox.ReadOnly)
+			{
+				MessageBox.Show("Invalid cipher alphabet length!\nIt must be 26 distinct English letters.", "Try again!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+				this.ciphAlphabetTextbox.Focus();
+			}
 
+			return;
 		}
 
 		private void lockEncryptImage_Click(object sender, EventArgs e)
 		{
+			this.encryptedTextTextbox.Text = String.Empty;
 
+			if (!String.IsNullOrEmpty(toEncryptTextbox.Text))
+			{
+				foreach(Char nextSymbol in this.toEncryptTextbox.Text)
+				{
+					if(Char.IsLetter(nextSymbol) && this.englishLetters.IsMatch(nextSymbol.ToString()))
+					{
+						this.encryptedTextTextbox.Text += this.dictionary[Char.ToLower(nextSymbol)];
+					}
+					else
+					{
+						this.encryptedTextTextbox.Text += nextSymbol;
+					}
+				}
+			}
+			else
+			{
+				Console.WriteLine("toEncryptTextbox is empty!");
+				this.toEncryptTextbox.Focus();
+			}
+
+			return;
 		}
 	}
 }
