@@ -16,6 +16,7 @@ namespace Monoalphabet
 		public String strCiphAlphabet;
 		public String strToEncrypt;
 		public Dictionary<Char, Char> dictionary;
+		public Dictionary<Char, Char> decryptionary;
 		private TextBox ciphAlphabetTextbox;
 		private PictureBox keyImage;
 		private TextBox toEncryptTextbox;
@@ -26,6 +27,7 @@ namespace Monoalphabet
 		private Label correctCipherAlphabetLabel;
 		private PictureBox lockEncryptImage;
 		private Label copyrightLabel;
+		private PictureBox lockDecryptImage;
 		public Regex englishLetters;
 
 		public StartForm()
@@ -36,7 +38,8 @@ namespace Monoalphabet
 			this.strCiphAlphabet = "spokycareltnbdfghijmquvwxz";
 			this.strToEncrypt = String.Empty;
 			this.toEncryptTextbox.ReadOnly = true;
-			this.dictionary = new Dictionary<char, char>(26);
+			this.dictionary = new Dictionary<Char, Char>(26);
+			this.decryptionary = new Dictionary<Char, Char>(26);
 			this.makeDictionary();
 
 			ToolTip toolTip = new ToolTip();
@@ -44,6 +47,7 @@ namespace Monoalphabet
 			toolTip.SetToolTip(this.toEncryptTextbox, "Input text to encrypt here");
 			toolTip.SetToolTip(this.encryptedTextTextbox, "Copy the encrypted text from here");
 			toolTip.SetToolTip(this.lockEncryptImage, "Click to encrypt text from the left textbox");
+			toolTip.SetToolTip(this.lockDecryptImage, "Click to decrypt text in the right textbox");
 			
 			this.englishLetters = new Regex("[a-zA-Z]", RegexOptions.Compiled);
 		}
@@ -74,10 +78,12 @@ namespace Monoalphabet
 			this.correctCipherAlphabetLabel = new System.Windows.Forms.Label();
 			this.lockEncryptImage = new System.Windows.Forms.PictureBox();
 			this.copyrightLabel = new System.Windows.Forms.Label();
+			this.lockDecryptImage = new System.Windows.Forms.PictureBox();
 			((System.ComponentModel.ISupportInitialize)(this.keyImage)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.openLockImage)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.closedLockImage)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.lockEncryptImage)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.lockDecryptImage)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// ciphAlphabetTextbox
@@ -107,6 +113,7 @@ namespace Monoalphabet
 			this.toEncryptTextbox.Font = new System.Drawing.Font("Times New Roman", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
 			this.toEncryptTextbox.ForeColor = System.Drawing.SystemColors.WindowText;
 			this.toEncryptTextbox.Location = new System.Drawing.Point(12, 80);
+			this.toEncryptTextbox.MaxLength = 1000;
 			this.toEncryptTextbox.Multiline = true;
 			this.toEncryptTextbox.Name = "toEncryptTextbox";
 			this.toEncryptTextbox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
@@ -119,6 +126,7 @@ namespace Monoalphabet
 			this.encryptedTextTextbox.BackColor = System.Drawing.SystemColors.ButtonFace;
 			this.encryptedTextTextbox.Font = new System.Drawing.Font("Times New Roman", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
 			this.encryptedTextTextbox.Location = new System.Drawing.Point(576, 80);
+			this.encryptedTextTextbox.MaxLength = 1000;
 			this.encryptedTextTextbox.Multiline = true;
 			this.encryptedTextTextbox.Name = "encryptedTextTextbox";
 			this.encryptedTextTextbox.ReadOnly = true;
@@ -192,10 +200,23 @@ namespace Monoalphabet
 			this.copyrightLabel.TabIndex = 9;
 			this.copyrightLabel.Text = "(Artwork)© Beta, 2020";
 			// 
+			// lockDecryptImage
+			// 
+			this.lockDecryptImage.Cursor = System.Windows.Forms.Cursors.Hand;
+			this.lockDecryptImage.Image = ((System.Drawing.Image)(resources.GetObject("lockDecryptImage.Image")));
+			this.lockDecryptImage.Location = new System.Drawing.Point(466, 328);
+			this.lockDecryptImage.Name = "lockDecryptImage";
+			this.lockDecryptImage.Size = new System.Drawing.Size(80, 80);
+			this.lockDecryptImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+			this.lockDecryptImage.TabIndex = 10;
+			this.lockDecryptImage.TabStop = false;
+			this.lockDecryptImage.Click += new System.EventHandler(this.lockDecryptImage_Click);
+			// 
 			// StartForm
 			// 
 			this.BackColor = System.Drawing.SystemColors.ControlLightLight;
 			this.ClientSize = new System.Drawing.Size(1008, 537);
+			this.Controls.Add(this.lockDecryptImage);
 			this.Controls.Add(this.copyrightLabel);
 			this.Controls.Add(this.lockEncryptImage);
 			this.Controls.Add(this.correctCipherAlphabetLabel);
@@ -210,11 +231,12 @@ namespace Monoalphabet
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.MaximizeBox = false;
 			this.Name = "StartForm";
-			this.Text = "Monoalphabet Cipher Implementation";
+			this.Text = "Monoalphabetic Cipher Implementation";
 			((System.ComponentModel.ISupportInitialize)(this.keyImage)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.openLockImage)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.closedLockImage)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.lockEncryptImage)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.lockDecryptImage)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -333,8 +355,35 @@ namespace Monoalphabet
 			}
 			else
 			{
-				Console.WriteLine("toEncryptTextbox is empty!");
 				this.toEncryptTextbox.Focus();
+			}
+
+			return;
+		}
+
+		private void lockDecryptImage_Click(object sender, EventArgs e)
+		{
+			String encText = this.encryptedTextTextbox.Text;
+			if (String.IsNullOrEmpty(this.encryptedTextTextbox.Text)) return;
+			if ((this.ciphAlphabetTextbox.TextLength == 26) && validateCipherAlphabet(this.ciphAlphabetTextbox.Text))
+			{
+				this.encryptedTextTextbox.Clear();
+				for (Int32 i = 0; i < 26; i++) this.decryptionary[this.ciphAlphabetTextbox.Text[i]] = this.strOrigAlphabet[i];
+				foreach (Char c in encText)
+				{
+					if (Char.IsLetter(c) && this.englishLetters.IsMatch(c.ToString()))
+					{
+						this.encryptedTextTextbox.Text += this.decryptionary[Char.ToLower(c)];
+					}
+					else
+					{
+						this.encryptedTextTextbox.Text += c;
+					}
+				}
+			}
+			else
+			{
+				MessageBox.Show("Invalid cipher alphabet! It must be 26 distinct English letters.", "Try again!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
 			}
 
 			return;
